@@ -1,10 +1,8 @@
 package com.yujie.yjclock;
 
-import android.app.TimePickerDialog;
 import android.content.Context;
 import android.support.annotation.Nullable;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -13,7 +11,6 @@ import android.widget.ListView;
 import android.widget.TimePicker;
 
 import java.util.Calendar;
-import java.util.Date;
 import java.util.Locale;
 
 /**
