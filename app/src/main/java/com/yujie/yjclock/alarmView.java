@@ -1,15 +1,20 @@
 package com.yujie.yjclock;
 
+import android.app.TimePickerDialog;
 import android.content.Context;
 import android.support.annotation.Nullable;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.TimePicker;
 
+import java.util.Calendar;
 import java.util.Date;
+import java.util.Locale;
 
 /**
  * Created by Administrator on 2017/5/24 0024.
@@ -37,9 +42,8 @@ public class alarmView extends LinearLayout {
         alarmList = (ListView) findViewById(R.id.alarm_list);
         addAlarm = (Button) findViewById(R.id.add_alarm);
         //设置列表资源
-        adapter = new ArrayAdapter<timeNum>(getContext(), android.R.layout.simple_list_item_1);
+        adapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_list_item_1);
         alarmList.setAdapter(adapter);
-        //adapter.add(new timeNum(System.currentTimeMillis()));
         //按钮事件
         addAlarm.setOnClickListener(new OnClickListener() {
             @Override
@@ -50,15 +54,34 @@ public class alarmView extends LinearLayout {
     }
 
     private void addTime() {
-        //TODO
-        adapter.add(new timeNum(System.currentTimeMillis()));
+        Calendar nowTime = Calendar.getInstance();
+        new MyTimePickerDialog(getContext(), new MyTimePickerDialog.OnTimeSetListener() {
+            @Override
+            public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
+                Calendar setTime = Calendar.getInstance();
+                setTime.set(Calendar.HOUR_OF_DAY, hourOfDay);
+                setTime.set(Calendar.MINUTE, minute);
+                Calendar rightTime = Calendar.getInstance();
+                if (setTime.getTimeInMillis() <= rightTime.getTimeInMillis()) {
+                    setTime.setTimeInMillis(setTime.getTimeInMillis()+24*60*60*1000);
+                }
+                timeNum tn = new timeNum(setTime.getTimeInMillis());
+                adapter.add(tn);
+            }
+
+        },nowTime.get(Calendar.HOUR_OF_DAY),nowTime.get(Calendar.MINUTE),true).show();
     }
 
     private class timeNum {
-        public timeNum(long time) {
+        private timeNum(long time) {
             this.time = time;
-            date = new Date(time);
-            timeLab = date.getHours() + ":" + date.getMinutes();
+            date = Calendar.getInstance();
+            date.setTimeInMillis(time);
+            timeLab = String.format(Locale.CHINA,"%d月%d日 %d:%d",
+                    date.get(Calendar.MONTH),
+                    date.get(Calendar.DATE),
+                    date.get(Calendar.HOUR_OF_DAY),
+                    date.get(Calendar.MINUTE));
         }
 
         public long getTime() {
@@ -74,9 +97,9 @@ public class alarmView extends LinearLayout {
             return timeLab;
         }
 
-        public long time=0;
-        public String timeLab="";
-        public Date date;
+        private long time=0;
+        private String timeLab="";
+        private Calendar date;
     }
 
 }
