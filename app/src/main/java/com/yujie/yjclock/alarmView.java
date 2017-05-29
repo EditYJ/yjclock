@@ -1,8 +1,10 @@
 package com.yujie.yjclock;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.support.annotation.Nullable;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -21,6 +23,7 @@ public class alarmView extends LinearLayout {
     private ListView alarmList;
     private Button addAlarm;
     private ArrayAdapter<timeNum> adapter;
+    private static final String SHARE_ALARM_LIST = "alarmlist";
     public alarmView(Context context) {
         super(context);
     }
@@ -41,6 +44,7 @@ public class alarmView extends LinearLayout {
         //设置列表资源
         adapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_list_item_1);
         alarmList.setAdapter(adapter);
+        readAlarm();
         //按钮事件
         addAlarm.setOnClickListener(new OnClickListener() {
             @Override
@@ -64,11 +68,28 @@ public class alarmView extends LinearLayout {
                 }
                 timeNum tn = new timeNum(setTime.getTimeInMillis());
                 adapter.add(tn);
+                saveAlarm();
             }
 
         },nowTime.get(Calendar.HOUR_OF_DAY),nowTime.get(Calendar.MINUTE),true).show();
     }
 
+    //保存闹钟列表到SharedPreferences
+    private void saveAlarm() {
+        SharedPreferences.Editor editor = getContext().getSharedPreferences(alarmView.class.getName(), Context.MODE_PRIVATE).edit();
+        StringBuffer sb = new StringBuffer();
+        for (int i = 0; i < adapter.getCount(); i++) {
+            sb.append(adapter.getItem(i).getTime()).append(",");
+        }
+        String content = sb.toString().substring(0, sb.length() - 1);
+        editor.putString(SHARE_ALARM_LIST, sb.toString());
+        Log.d("saveAlarmContent", "saveAlarm: "+content);
+        editor.commit();
+    }
+
+    private void readAlarm() {
+        //TODO
+    }
     private class timeNum {
         private timeNum(long time) {
             this.time = time;
