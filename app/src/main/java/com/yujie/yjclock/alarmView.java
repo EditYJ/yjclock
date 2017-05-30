@@ -86,9 +86,16 @@ public class alarmView extends LinearLayout {
         Log.d("saveAlarmContent", "saveAlarm: "+content);
         editor.commit();
     }
-
+    //读取闹钟列表
     private void readAlarm() {
-        //TODO
+        SharedPreferences sharedPreferences = getContext().getSharedPreferences(alarmView.class.getName(), Context.MODE_PRIVATE);
+        String content = sharedPreferences.getString(SHARE_ALARM_LIST, null);
+        if (content != null) {
+            String[] timeStrings=content.split(",");
+            for (String strings:timeStrings) {
+                adapter.add(new timeNum(Long.parseLong(strings)));
+            }
+        }
     }
     private class timeNum {
         private timeNum(long time) {
