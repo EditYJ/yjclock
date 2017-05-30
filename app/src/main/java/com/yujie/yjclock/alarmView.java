@@ -1,11 +1,14 @@
 package com.yujie.yjclock;
 
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.support.annotation.Nullable;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.LinearLayout;
@@ -72,6 +75,25 @@ public class alarmView extends LinearLayout {
             }
 
         },nowTime.get(Calendar.HOUR_OF_DAY),nowTime.get(Calendar.MINUTE),true).show();
+
+        //长按删除
+        alarmList.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+            @Override
+            public boolean onItemLongClick(AdapterView<?> parent, View view, final int position, long id) {
+                new AlertDialog.Builder(getContext()).setTitle("操作选项").setItems(new CharSequence[]{"删除"}, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        switch (which) {
+                            case 0:
+                                deleteAlarm(position);
+                                break;
+                        }
+                        saveAlarm();
+                    }
+                }).setNegativeButton("取消",null);
+                return true;
+            }
+        });
     }
 
     //保存闹钟列表到SharedPreferences
@@ -96,6 +118,12 @@ public class alarmView extends LinearLayout {
                 adapter.add(new timeNum(Long.parseLong(strings)));
             }
         }
+    }
+
+    //删除闹钟列表
+    private void deleteAlarm(int postion) {
+        //TODO
+        adapter.remove(adapter.getItem(postion));
     }
     private class timeNum {
         private timeNum(long time) {
