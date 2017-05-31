@@ -1,8 +1,12 @@
 package com.yujie.yjclock;
 
+import android.app.AlarmManager;
 import android.app.AlertDialog;
+import android.app.PendingIntent;
+import android.app.TimePickerDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.support.annotation.Nullable;
 import android.util.AttributeSet;
@@ -27,16 +31,24 @@ public class alarmView extends LinearLayout {
     private Button addAlarm;
     private ArrayAdapter<timeNum> adapter;
     private static final String SHARE_ALARM_LIST = "alarmlist";
+    private AlarmManager alarmManager;
     public alarmView(Context context) {
         super(context);
+        init();
     }
 
     public alarmView(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
+        init();
     }
 
     public alarmView(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
+        init();
+    }
+    //初始化闹钟服务
+    private  void init() {
+        alarmManager = (AlarmManager) getContext().getSystemService(Context.ALARM_SERVICE);
     }
 
     @Override
@@ -55,27 +67,6 @@ public class alarmView extends LinearLayout {
                 addTime();
             }
         });
-    }
-
-    private void addTime() {
-        Calendar nowTime = Calendar.getInstance();
-        new MyTimePickerDialog(getContext(), new MyTimePickerDialog.OnTimeSetListener() {
-            @Override
-            public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
-                Calendar setTime = Calendar.getInstance();
-                setTime.set(Calendar.HOUR_OF_DAY, hourOfDay);
-                setTime.set(Calendar.MINUTE, minute);
-                Calendar rightTime = Calendar.getInstance();
-                if (setTime.getTimeInMillis() <= rightTime.getTimeInMillis()) {
-                    setTime.setTimeInMillis(setTime.getTimeInMillis()+24*60*60*1000);
-                }
-                timeNum tn = new timeNum(setTime.getTimeInMillis());
-                adapter.add(tn);
-                saveAlarm();
-            }
-
-        },nowTime.get(Calendar.HOUR_OF_DAY),nowTime.get(Calendar.MINUTE),true).show();
-
         //长按删除
         alarmList.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
             @Override
@@ -87,13 +78,38 @@ public class alarmView extends LinearLayout {
                             case 0:
                                 deleteAlarm(position);
                                 break;
+                            default:
+                                break;
                         }
-                        saveAlarm();
                     }
-                }).setNegativeButton("取消",null);
+                }).setNegativeButton("取消",null).show();
                 return true;
             }
         });
+    }
+
+    private void addTime() {
+        final Calendar nowTime = Calendar.getInstance();
+        new MyTimePickerDialog(getContext(), new MyTimePickerDialog.OnTimeSetListener() {
+            @Override
+            public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
+                Calendar setTime = Calendar.getInstance();
+                setTime.set(Calendar.HOUR_OF_DAY, hourOfDay);
+                setTime.set(Calendar.MINUTE, minute);
+                setTime.set(Calendar.SECOND, 0);
+                setTime.set(Calendar.MILLISECOND, 0);
+                Calendar rightTime = Calendar.getInstance();
+                if (setTime.getTimeInMillis() <= rightTime.getTimeInMillis()) {
+                    setTime.setTimeInMillis(setTime.getTimeInMillis()+24*60*60*1000);
+                }
+                timeNum tn = new timeNum(setTime.getTimeInMillis());
+                adapter.add(tn);
+                Log.d("执行的延迟时间", "onTimeSet: "+nowTime.getTimeInMillis());
+                alarmManager.setRepeating(AlarmManager.RTC_WAKEUP,nowTime.getTimeInMillis(),2000, PendingIntent.getBroadcast(getContext(),0,new Intent(getContext(),AlarmReceiver.class),0));
+                saveAlarm();
+            }
+
+        },nowTime.get(Calendar.HOUR_OF_DAY),nowTime.get(Calendar.MINUTE),true).show();
     }
 
     //保存闹钟列表到SharedPreferences
@@ -103,9 +119,13 @@ public class alarmView extends LinearLayout {
         for (int i = 0; i < adapter.getCount(); i++) {
             sb.append(adapter.getItem(i).getTime()).append(",");
         }
-        String content = sb.toString().substring(0, sb.length() - 1);
-        editor.putString(SHARE_ALARM_LIST, sb.toString());
-        Log.d("saveAlarmContent", "saveAlarm: "+content);
+        if (sb.length() >= 1) {
+            String content = sb.toString().substring(0, sb.length() - 1);
+            editor.putString(SHARE_ALARM_LIST, sb.toString());
+            Log.d("saveAlarmContent", "saveAlarm: " + content);
+        } else {
+            editor.putString(SHARE_ALARM_LIST, null);
+        }
         editor.commit();
     }
     //读取闹钟列表
@@ -124,6 +144,7 @@ public class alarmView extends LinearLayout {
     private void deleteAlarm(int postion) {
         //TODO
         adapter.remove(adapter.getItem(postion));
+        saveAlarm();
     }
     private class timeNum {
         private timeNum(long time) {
