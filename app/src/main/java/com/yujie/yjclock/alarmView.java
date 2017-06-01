@@ -105,7 +105,8 @@ public class alarmView extends LinearLayout {
                 timeNum tn = new timeNum(setTime.getTimeInMillis());
                 adapter.add(tn);
                 Log.d("执行的延迟时间", "onTimeSet: "+nowTime.getTimeInMillis());
-                alarmManager.setRepeating(AlarmManager.RTC_WAKEUP,nowTime.getTimeInMillis(),2000, PendingIntent.getBroadcast(getContext(),0,new Intent(getContext(),AlarmReceiver.class),0));
+                alarmManager.setRepeating(AlarmManager.RTC_WAKEUP,setTime.getTimeInMillis(),24*60*60*1000, PendingIntent.getBroadcast(getContext(),tn.getId(),new Intent(getContext(),AlarmReceiver.class),0));
+                Log.d("添加的闹钟id", "addTime: "+tn.getId());
                 saveAlarm();
             }
 
@@ -143,8 +144,11 @@ public class alarmView extends LinearLayout {
     //删除闹钟列表
     private void deleteAlarm(int postion) {
         //TODO
-        adapter.remove(adapter.getItem(postion));
+        timeNum timeNum = adapter.getItem(postion);
+        adapter.remove(timeNum);
         saveAlarm();
+        alarmManager.cancel(PendingIntent.getBroadcast(getContext(),timeNum.getId(),new Intent(getContext(),AlarmReceiver.class),0));
+        Log.d("删除的闹钟id", "deleteAlarm: "+timeNum.getId());
     }
     private class timeNum {
         private timeNum(long time) {
@@ -169,6 +173,10 @@ public class alarmView extends LinearLayout {
         @Override
         public String toString() {
             return timeLab;
+        }
+
+        public int getId() {
+            return (int) (getTime() / 1000 / 60);
         }
 
         private long time=0;
