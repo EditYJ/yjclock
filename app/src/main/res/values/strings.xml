@@ -1,4 +1,5 @@
 <resources>
     <string name="app_name">yjclock</string>
     <string name="add_alarm">Add alarm</string>
+    <string name="playmusic">Play Music</string>
 </resources>

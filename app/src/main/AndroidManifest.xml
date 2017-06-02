@@ -17,6 +17,7 @@
             </intent-filter>
         </activity>
         <receiver android:name=".AlarmReceiver" />
+        <activity android:name=".PlayMusic"/>
     </application>
 
 </manifest>
