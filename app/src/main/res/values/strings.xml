@@ -2,4 +2,8 @@
     <string name="app_name">yjclock</string>
     <string name="add_alarm">Add alarm</string>
     <string name="playmusic">Play Music</string>
+    <string name="timer_start">Start</string>
+    <string name="timer_reset">Reset</string>
+    <string name="timer_resume">Resume</string>
+    <string name="timer_pause">Pause</string>
 </resources>
